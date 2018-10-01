@@ -1,4 +1,4 @@
-package ee.applaud.test.mapapp
+package ee.applaud.test.mapapp.facebook
 
 import com.facebook.GraphResponse
 

@@ -1,4 +1,4 @@
-package ee.applaud.test.mapapp;
+package ee.applaud.test.mapapp.facebook;
 
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.google.gson.Gson

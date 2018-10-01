@@ -1,44 +1,62 @@
 package ee.applaud.test.mapapp
 
-import android.support.v4.app.FragmentActivity
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import com.here.android.mpa.common.GeoCoordinate
+import ee.applaud.test.mapapp.facebook.FacebookClient
+import com.here.android.mpa.common.Image
+import com.here.android.mpa.mapping.*
+import ee.applaud.test.mapapp.maps.MapsClient
 
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 
+class MapsActivity : MapsView, AppCompatActivity() {
 
-class MapsActivity : FragmentActivity(), OnMapReadyCallback, MapsView {
-    private var mMap: GoogleMap? = null
+    private var mapFragment: MapFragment = MapFragment()
+    private var permissionManager: PermissionManager = PermissionManager()
+    private var facebookClient: FacebookClient = FacebookClient(this)
+    private var mapClient = MapsClient(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-        val facebookClient = FacebookClient(this)
-        facebookClient.requestRestaurantsData()
+        mapFragment = fragmentManager.findFragmentById(R.id.mapfragment) as MapFragment
+        if (permissionManager.hasRequiredPermissions(this)) {
+            mapClient.initMap(mapFragment)
+            facebookClient.requestRestaurantsData()
+        } else {
+            permissionManager.setUpPermissions(this)
+        }
+        //TODO check if has permissions first and then do everything
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            101 -> {
 
-        val tallinn = LatLng(59.479804, 24.748816)
-        val varska = LatLng(57.963036, 27.640212)
-        val midPoint = LatLng(58.639236, 26.133681)
-        mMap!!.addMarker(MarkerOptions().position(tallinn).title("Tallinn"))
-        mMap!!.addMarker(MarkerOptions().position(varska).title("Värska"))
-        mMap!!.moveCamera(CameraUpdateFactory.newLatLng(tallinn))
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Log.i("tag", "Permission has been denied by user")
+                } else {
+                    Log.i("tag", "Permission has been granted by user")
+                    mapClient.initMap(mapFragment)
+                }
+            }
+        }
     }
 
-    override fun displayMarkerOnMap(location: LatLng, markerTitle: String){
-        mMap!!.addMarker(MarkerOptions().position(location).title(markerTitle))
-        mMap!!.moveCamera(CameraUpdateFactory.newLatLng(location))
+    override fun addMapRoute(mapRoute: MapRoute) {
+        mapFragment.map.addMapObject(mapRoute)
+    }
+
+    override fun displayMarkerOnMap(location: GeoCoordinate, markerTitle: String) {
+        val markerImage = Image()
+        markerImage.setImageResource(R.drawable.location_pointer)
+        val mapMarker = MapMarker(location, markerImage)
+        mapMarker.title = markerTitle
+        //TODO check if title is ok place for displaying likes
+        mapFragment.map.addMapObject(mapMarker)
     }
 }

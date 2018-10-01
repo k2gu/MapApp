@@ -1,9 +1,10 @@
-package ee.applaud.test.mapapp
+package ee.applaud.test.mapapp.facebook
 
 import android.os.Bundle
 import com.facebook.GraphResponse
-import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
+import com.here.android.mpa.common.GeoCoordinate
+import ee.applaud.test.mapapp.MapsView
 
 class FacebookClient(val view: MapsView) : FacebookCallback {
 
@@ -16,7 +17,7 @@ class FacebookClient(val view: MapsView) : FacebookCallback {
         parameters.putString("distance", "20000")
 
         val request = FacebookRequest(this)
-        request.getRestaurants(parameters)
+        request.getRestaurantsNearby(parameters)
     }
 
     override fun onRestaurantsResponse(response: GraphResponse) {
@@ -25,8 +26,8 @@ class FacebookClient(val view: MapsView) : FacebookCallback {
         var responseList: List<RestaurantsResponse.Data> = ArrayList()
         for (data in restaurantsResponse.data!!) {
             responseList += data
-            //TODO küsi andmeid õigena
-            view.displayMarkerOnMap(LatLng(data.location.latitude.toDouble(), data.location.longitude.toDouble()), data.name)
+            //TODO küsi andmeid õige tüübina'
+            view.displayMarkerOnMap(GeoCoordinate(data.location.latitude.toDouble(), data.location.longitude.toDouble()), data.name)
         }
     }
 
