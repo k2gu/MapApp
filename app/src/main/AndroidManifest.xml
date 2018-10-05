@@ -3,6 +3,7 @@
     package="ee.applaud.test.mapapp">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -12,13 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebookApplicationId"/>
 
-        <meta-data android:name="com.here.android.maps.appid" android:value="XU9m4wc4Oses0YSUssiC"/>
-        <meta-data android:name="com.here.android.maps.apptoken" android:value="ChwbtoIYAhQW8RY7ty5Dog"/>
+        <meta-data android:name="com.here.android.maps.appid" android:value="@string/hereApplicationId"/>
+        <meta-data android:name="com.here.android.maps.apptoken" android:value="@string/hereApplicationToken"/>
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".MainActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

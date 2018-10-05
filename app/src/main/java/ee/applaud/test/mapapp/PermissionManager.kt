@@ -6,6 +6,10 @@ import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 
+/**
+ * This class is responsible for checking if required permissions are granted or not.
+ */
+
 class PermissionManager {
     private val requiredSdkPermissions = WRITE_EXTERNAL_STORAGE
 

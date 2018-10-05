@@ -1,10 +1,11 @@
-package ee.applaud.test.mapapp.facebook;
+package ee.applaud.test.mapapp.facebook
 
-import com.github.kittinunf.fuel.core.ResponseDeserializable
-import com.google.gson.Gson
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
+
+/**
+ * Data model for facebook restaurants response
+ */
 
 class RestaurantsResponse {
 
@@ -19,16 +20,7 @@ class RestaurantsResponse {
     }
 
     class Location {
-        var city: String = ""
-        var country: String = ""
         var latitude: String = ""
         var longitude: String = ""
-        var street: String = ""
-        var zip: String = ""
-    }
-
-    class ListDeserializer : ResponseDeserializable<List<RestaurantsResponse>> {
-        override fun deserialize(content: String) =
-                Gson().fromJson<List<RestaurantsResponse>>(content, object : TypeToken<List<RestaurantsResponse>>() {}.type)
     }
 }

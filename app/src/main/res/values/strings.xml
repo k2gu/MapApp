@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">MapApp</string>
     <string name="title_activity_maps">Map</string>
-    <string name="facebook_app_id">174108643469871</string>
+    <string name="general_error_message">Something went wrong. Try again</string>
+    <string name="permissions_not_granted_error">Permission has been denied by user</string>
+    <string name="unable_to_init_map_error">Unable to initialize map fragment</string>
+    <string name="route_calculation_error">Failure in route calculation</string>
+    <string name="facebook_error">Failure in Facebook graph api request</string>
+    <string name="try_again_button_label">Try again</string>
+    <string name="permission_not_granted_error">Permissions have to be granted in order to use this app</string>
 </resources>

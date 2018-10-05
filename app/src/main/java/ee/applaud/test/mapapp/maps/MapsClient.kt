@@ -9,49 +9,71 @@ import com.here.android.mpa.routing.RouteManager
 import com.here.android.mpa.routing.RouteOptions
 import com.here.android.mpa.routing.RoutePlan
 import com.here.android.mpa.routing.RouteResult
-import ee.applaud.test.mapapp.MapsView
+import ee.applaud.test.mapapp.MapsPresenter
 
-class MapsClient(val view: MapsView)  {
+/**
+ * This class is responsible for communication with maps server. This class does not communicate
+ * directly with view. It gives state updates to presenter and it decides what to do. This simplifies
+ * having classes with single-responsibility.
+ *
+ * In current solution, I hardcoded Tallinn, Värska and midpoint coordinates in order to make as simple
+ * solution as possible. If other places would be needed, it would be easy to add one request that
+ * asks for coordinates.
+ */
+
+open class MapsClient(val presenter: MapsPresenter)  {
+    private val centerPoint: GeoCoordinate = GeoCoordinate(58.639236, 26.133681)
+    private val tallinnLocation: GeoCoordinate = GeoCoordinate(59.479804, 24.748816)
+    private val varskaLocation: GeoCoordinate = GeoCoordinate(57.963036, 27.640212)
 
     fun initMap(mapFragment: MapFragment) {
         mapFragment.init { error ->
             if (error == OnEngineInitListener.Error.NONE) {
-                val map = mapFragment.map
-                map.setCenter(GeoCoordinate(58.639236, 26.133681), Map.Animation.NONE)
+                displayMap(mapFragment)
                 calculateRoute()
             } else {
-                //TODO SHOW ERROR
-                println("ERROR: Cannot initialize MapFragment")
+                presenter.onError(MapsPresenter.ErrorType.MAP_INIT, error.details)
             }
         }
+    }
+
+    private fun displayMap(mapFragment: MapFragment) {
+        val map = mapFragment.map
+        //TODO adjust zoom level to what it should be. Currently zoomed right in the middle. Verify if this is expected behaviour
+        map.zoomLevel = 10.0
+        map.setCenter(centerPoint, Map.Animation.NONE)
     }
 
     private fun calculateRoute() {
         val rm = RouteManager()
         val routePlan = RoutePlan()
-        routePlan.addWaypoint(GeoCoordinate(59.479804, 24.748816))
-        routePlan.addWaypoint(GeoCoordinate(57.963036, 27.640212))
+        routePlan.addWaypoint(tallinnLocation)
+        routePlan.addWaypoint(varskaLocation)
+
+        routePlan.routeOptions = getRouteOptions()
+        rm.calculateRoute(routePlan, RouteListener())
+    }
+
+    private fun getRouteOptions() : RouteOptions {
         val routeOptions = RouteOptions()
         routeOptions.transportMode = RouteOptions.TransportMode.CAR
         routeOptions.routeType = RouteOptions.Type.FASTEST
-
-        routePlan.routeOptions = routeOptions
-        rm.calculateRoute(routePlan, RouteListener())
-
+        return routeOptions
     }
+
+    //TODO handle icons on click events
 
     private inner class RouteListener : RouteManager.Listener {
 
         override fun onProgress(percentage: Int) {
-            // Display a message indicating calculation progress
         }
 
         override fun onCalculateRouteFinished(error: RouteManager.Error, routeResult: List<RouteResult>) {
             if (error == RouteManager.Error.NONE) {
                 val mapRoute = MapRoute(routeResult[0].route)
-                view.addMapRoute(mapRoute)
+                presenter.onRouteCalculated(mapRoute)
             } else {
-                // TODO Display a message indicating route calculation failure
+                presenter.onError(MapsPresenter.ErrorType.ROUTE_CALCULATION, error.name)
             }
         }
     }

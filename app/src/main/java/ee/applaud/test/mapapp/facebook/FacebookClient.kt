@@ -1,37 +1,36 @@
 package ee.applaud.test.mapapp.facebook
 
-import android.os.Bundle
 import com.facebook.GraphResponse
 import com.google.gson.Gson
 import com.here.android.mpa.common.GeoCoordinate
-import ee.applaud.test.mapapp.MapsView
+import ee.applaud.test.mapapp.MapsPresenter
 
-class FacebookClient(val view: MapsView) : FacebookCallback {
+/**
+ * This class is responsible for getting data from facebook and process the response.
+ * It communicates with presenter and is the callback class for facebook responses.
+ */
+open class FacebookClient(private val presenter: MapsPresenter) : FacebookCallback {
 
     fun requestRestaurantsData() {
-        val parameters = Bundle()
-        parameters.putString("type", "place")
-        parameters.putString("fields", "id,name,location")
-        parameters.putString("q", "restaurant")
-        parameters.putString("center", "58.639236,26.133681")
-        parameters.putString("distance", "20000")
-
         val request = FacebookRequest(this)
-        request.getRestaurantsNearby(parameters)
+        request.getRestaurantsNearby()
     }
 
+    //TODO this method has too many responsibilities
     override fun onRestaurantsResponse(response: GraphResponse) {
-        val jsonString = response.jsonObject.toString()
-        val restaurantsResponse = Gson().fromJson(jsonString, RestaurantsResponse::class.java)
-        var responseList: List<RestaurantsResponse.Data> = ArrayList()
-        for (data in restaurantsResponse.data!!) {
-            responseList += data
-            //TODO küsi andmeid õige tüübina'
-            view.displayMarkerOnMap(GeoCoordinate(data.location.latitude.toDouble(), data.location.longitude.toDouble()), data.name)
+        if (response.error == null && response.connection.responseCode == 200) {
+            val jsonString = response.jsonObject.toString()
+            val restaurantsResponse = Gson().fromJson(jsonString,
+                    RestaurantsResponse::class.java)
+            var responseList: List<RestaurantsResponse.Data> = ArrayList()
+            for (data in restaurantsResponse.data!!) {
+                responseList += data
+                //TODO create model so that it would be possible to get latitude and longitude as doubles by default
+                presenter.onMarkersLocationsCalculated(GeoCoordinate(data.location.latitude.toDouble(),
+                        data.location.longitude.toDouble()))
+            }
+        } else {
+            presenter.onError(MapsPresenter.ErrorType.FACEBOOK, response.error.errorMessage)
         }
-    }
-
-    override fun onPageLikesResponse(response: GraphResponse) {
-
     }
 }
